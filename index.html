@@ -13,8 +13,8 @@
   html, body { margin: 0; padding: 0; background: #101722; }
   body {
     font-family: system-ui, -apple-system, sans-serif;
-    display: flex; justify-content: center; align-items: flex-start;
-    min-height: 100vh; padding: 16px; box-sizing: border-box;
+    display: flex; justify-content: center; align-items: center;
+    min-height: 100vh; min-height: 100dvh; padding: 12px; box-sizing: border-box;
   }
   .wrap { width: 100%; max-width: 430px; }
   .card { background: #1A2230; border-radius: 12px; padding: 12px; }
@@ -45,9 +45,24 @@
 const cv = document.getElementById('game');
 const ctx = cv.getContext('2d');
 const W = 356, H = 300;
-const dpr = Math.min(window.devicePixelRatio || 1, 2);
-cv.width = W * dpr; cv.height = H * dpr;
-ctx.scale(dpr, dpr);
+const wrapEl = document.querySelector('.wrap');
+const cardEl = document.querySelector('.card');
+function fit() {
+  const extra = cardEl.offsetHeight - cv.offsetHeight;
+  const availH = Math.max(220, window.innerHeight - extra - 24);
+  const availW = Math.max(220, window.innerWidth - 24);
+  const cssW = Math.min(availW, availH * (W / H), 1024);
+  wrapEl.style.maxWidth = cssW + 'px';
+  const R = Math.min(4, Math.max(1, cssW * (window.devicePixelRatio || 1) / W));
+  cv.width = Math.round(W * R);
+  cv.height = Math.round(H * R);
+  ctx.setTransform(R, 0, 0, R, 0, 0);
+}
+fit();
+requestAnimationFrame(fit);
+let rszT;
+window.addEventListener('resize', () => { clearTimeout(rszT); rszT = setTimeout(fit, 100); });
+window.addEventListener('orientationchange', () => setTimeout(fit, 250));
 
 const GROUND = 250, GRAV = 0.55, GOAL = 6200, TAU = Math.PI * 2;
 const FARY = GROUND - 60;
